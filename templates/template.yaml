@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CloudFormation Custom Resource for filling a DynamoDB Table
+
+Resources:
+    PokedexBuilderFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: ../pokedex/
+            Handler: app.handler
+            Runtime: python3.7
+            Timeout: 900
+            Policies:
+              - Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - dynamodb:PutItem
+                    Resource: '*'
+                  - Effect: Allow
+                    Action:
+                      - lambda:AddPermission
+                      - lambda:RemovePermission
+                      - events:PutRule
+                      - events:DeleteRule
+                      - events:PutTargets
+                      - events:RemoveTargets
+                    Resource: '*'
+
+    FilledDatabase:
+      Type: Custom::PokedexBuilder
+      Version: '1.0'
+      Properties:
+        ServiceToken: !GetAtt [PokedexBuilderFunction, "Arn"]
+        TableName:
+          Fn::ImportValue: "PokedexTableName"
+
+Outputs:
+    StarterPokemon:
+      Description: "Pokemon Number for starter pokemon"
+      Value: !GetAtt FilledDatabase.Starter
+      Export:
+        Name: "StarterPokemon"

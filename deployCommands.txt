@@ -1,0 +1,5 @@
+aws cloudformation deploy --stack-name pugCFN-database --template-file templates/database.yaml --capabilities CAPABILITY_NAMED_IAM --profile workshop
+
+sam build --use-container -b ./build/ -t templates/template.yaml\
+&& sam package --s3-bucket cf-templates-1k1b9kkvx4tzj-us-east-1 --template-file build/template.yaml --output-template-file build/packaged.yaml --profile workshop\
+&& aws cloudformation deploy --template-file ./build/packaged.yaml --stack-name pugCFN-lambda --capabilities CAPABILITY_IAM --profile workshop
